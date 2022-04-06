@@ -18,13 +18,13 @@ class DataSource:
 
 sources: List[DataSource] = []
 
-default_sources = [DataSource(url='https://dd.weather.gc.ca/vertical_profile/observation/csv/', friendly_name='EC Vertical Profile', credentials=None)]
+default_sources = [DataSource(url='https://dd.weather.gc.ca/vertical_profile/observation/csv/', friendly_name='EC Vertical Profile', credentials=None),
+DataSource(url="http://weather.uwyo.edu/cgi-bin/sounding", friendly_name='University of Wyoming Upper Air Soundings', credentials=None)]
 sources += default_sources
 
-def fetch_data(folder):
-    for source in sources:
-        print('Fetching data from {}'.format(source.url))
+def fetch_ec_vertical_profile(source: DataSource, folder):
         response = requests.get(source.url)
+        # this works for EC Vertical Profile, not for all other sources
         soup = BeautifulSoup(response.content, 'html5lib')
         html_list = soup.find_all('a')
         source_files = []
@@ -54,6 +54,20 @@ def fetch_data(folder):
                 with open(dest_filepath, 'w+') as dest_file:
                     print('Writing data to destination file {}'.format(dest_file))
                     dest_file.write(data)
+
+def fetch_uwyo_data():
+    # sample url: http://weather.uwyo.edu/cgi-bin/sounding?region=naconf&TYPE=TEXT%3ALIST&YEAR=2022&MONTH=04&FROM=0100&TO=0612&STNM=71109
+    pass
+
+
+def fetch_data(folder):
+    for source in sources:
+        print('Fetching data from {}'.format(source.url))
+        if source.friendly_name == 'EC Vertical Profile':
+            fetch_ec_vertical_profile(source, folder)
+        elif source.friendly_name == 'University of Wyoming Upper Air Soundings':
+            fetch_uwyo_data()
+
 
     print('Finished retrieving all datasets')
 
